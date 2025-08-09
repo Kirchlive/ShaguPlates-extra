@@ -1,3 +1,5 @@
+	local _G = getfenv(0)
+	
 	ShaguPlates:RegisterModule("nameplates", "vanilla:tbc", function ()
 	-- disable original castbars
 	pcall(SetCVar, "ShowVKeyCastbar", 0)
@@ -978,7 +980,9 @@ nameplates.OnCreate = function(frame)
 	-- end
 	
 	-- skip data updates on invisible frames
-	if not visible then return end
+	-- if not visible then
+		-- return 
+	-- end
 	
 	--print("unitstr = plate.original.name:GetText(): "..plate.original.name:GetText())
 	--print("unitstr = plate.parent:GetName(1): "..plate.parent:GetName(1))
@@ -998,6 +1002,9 @@ nameplates.OnCreate = function(frame)
 	
 	-----------
 	local isPlayer = (player ~= nil)
+	if (unitstr ~= nil) then
+		isPlayer = UnitIsPlayer(unitstr)
+	end
 	
 	elite = plate.original.levelicon:IsShown() and not isPlayer and "boss" or elite	
 	
@@ -1338,6 +1345,11 @@ nameplates.OnCreate = function(frame)
 			if scanTextLine2Text and not string.find(scanTextLine2Text, "Level") then
 				--local owner, _ = string.split("'",ownerText)
 				guild = scanTextLine2Text
+			end
+		elseif (guild == nil or guild == "") then
+			local guildName, guildRankName, guildRankIndex = GetGuildInfo(unitstr)
+			if guildName then
+				guild = guildName
 			end
 		end
 	
@@ -1758,6 +1770,8 @@ nameplates.OnCreate = function(frame)
 	end
 
 	-----------------------------------------------
+	
+	-- local last = 0
 
 	nameplates.OnUpdate = function(frame)
 	local update
@@ -1977,75 +1991,87 @@ nameplates.OnCreate = function(frame)
 
 	if ShaguPlates.client <= 112000 then
 
-	local hookOnUpdate = nameplates.OnUpdate
-	nameplates.OnUpdate = function(self)
-	  -- initialize shortcut variables
-	  local plate = this.nameplate or this
-
-		-- if this:GetWidth() > 100 then
-			-- this:SetWidth(100)
-		-- end
-		
-		-- if this:GetHeight() > 10 then
-			-- this:SetHeight(10)
-		-- end
-		
-		--if (GetActivePlateCount() > 10) then
-		-- if (GetActivePlateCount() > 1) then
-			-- this:SetWidth(10)
-			-- this:SetHeight(10)
-		-- else
-			-- if this:GetWidth() == 10 and this:GetHeight() == 10 then
-				-- this:SetWidth(80)
-				-- this:SetHeight(10)
+		local hookOnUpdate = nameplates.OnUpdate
+		nameplates.OnUpdate = function(self)
+		  -- initialize shortcut variables
+		  
+			local plate = this.nameplate or this
+		  
+			-- last = last + arg1
+			-- if last >= 1 then
+				-- last = 0
+				-- --print("arg1"..arg1)
 			-- end
-		-- end
-		
-		this:SetWidth(1)
-		this:SetHeight(1)
-		
-		if plate.desiredYOffset and plate.currentYOffset then
-			--print("GetCameraZoom(): "..GetCameraZoom())
-		
-		
-			local offsetAnimationStep = 1.0
 			
-			if math.abs(plate.desiredYOffset-plate.currentYOffset) > 30 then
-				plate.currentYOffset = plate.desiredYOffset
-			end
-		
-			if (math.abs(plate.desiredYOffset-plate.currentYOffset) <= offsetAnimationStep) then
-				plate.currentYOffset = plate.desiredYOffset
-			else
-				
-			end
-			
-			if plate.desiredYOffset-plate.currentYOffset > 0 then
-				plate.currentYOffset = plate.currentYOffset + offsetAnimationStep
-			elseif plate.desiredYOffset-plate.currentYOffset < 0 then
-				plate.currentYOffset = plate.currentYOffset - offsetAnimationStep
-			end
-			
-			plate:SetPoint("TOP", plate.parent, "TOP", 0, plate.currentYOffset)
-			
-		end
-		
-		-- local zoom = GetCameraZoom()
-		
-		--plate:SetPoint("TOP", plate.parent, "TOP", 0, nameplateOffsetY)
-		-- print("zoom")
-		-- print("zoom: "..zoom)
-		
-		-- plate:SetPoint("TOP", plate.parent, "TOP", 0, -40)
-		
-		--this.nameplate:SetPoint("BOTTOM", this, "TOP", 0, 0)
-		
-		--this.nameplate:SetPoint("TOP", this, "TOP", 0, 0)
-		
-		--this.nameplate:SetPoint("TOP", self, "TOP", 0, 0)
+			-- if this:GetWidth() > 100 then
+					-- this:SetWidth(100)
+				-- end
 
-	  hookOnUpdate(self)
-	end
+				-- if this:GetHeight() > 10 then
+					-- this:SetHeight(10)
+				-- end
+
+				--if (GetActivePlateCount() > 10) then
+				-- if (GetActivePlateCount() > 1) then
+					-- this:SetWidth(10)
+					-- this:SetHeight(10)
+				-- else
+					-- if this:GetWidth() == 10 and this:GetHeight() == 10 then
+						-- this:SetWidth(80)
+						-- this:SetHeight(10)
+					-- end
+				-- end
+
+			this:SetWidth(1)
+			this:SetHeight(1)
+
+			-- if plate.desiredYOffset and plate.currentYOffset then
+				-- --print("GetCameraZoom(): "..GetCameraZoom())
+
+
+				-- local offsetAnimationStep = 1.0
+				
+				-- if math.abs(plate.desiredYOffset-plate.currentYOffset) > 30 then
+					-- plate.currentYOffset = plate.desiredYOffset
+				-- end
+
+				-- if (math.abs(plate.desiredYOffset-plate.currentYOffset) <= offsetAnimationStep) then
+					-- plate.currentYOffset = plate.desiredYOffset
+				-- else
+					
+				-- end
+				
+				-- if plate.desiredYOffset-plate.currentYOffset > 0 then
+					-- plate.currentYOffset = plate.currentYOffset + offsetAnimationStep
+				-- elseif plate.desiredYOffset-plate.currentYOffset < 0 then
+					-- plate.currentYOffset = plate.currentYOffset - offsetAnimationStep
+				-- end
+				
+				-- --sync position (frequently)
+				-- plate:SetPoint("TOP", plate.parent, "TOP", 0, plate.currentYOffset)
+			-- else
+				-- --sync position (frequently)
+				-- plate:SetPoint("TOP", plate.parent, "TOP", 0, 0)
+			-- end
+			
+			plate:SetPoint("TOP", plate.parent, "TOP", 0, 0)
+
+			-- local zoom = GetCameraZoom()
+
+			--plate:SetPoint("TOP", plate.parent, "TOP", 0, nameplateOffsetY)
+			-- print("zoom")
+			-- print("zoom: "..zoom)
+
+			-- plate:SetPoint("TOP", plate.parent, "TOP", 0, -40)
+
+			--this.nameplate:SetPoint("BOTTOM", this, "TOP", 0, 0)
+
+			--this.nameplate:SetPoint("TOP", this, "TOP", 0, 0)
+
+			--this.nameplate:SetPoint("TOP", self, "TOP", 0, 0)
+
+		  hookOnUpdate(self)
+		end
 
 	end
 
