@@ -1273,7 +1273,8 @@ nameplates.OnCreate = function(frame)
 	------------- NO SCAN DISPLAY
 	if not TotemIcon then
 		--display minimal info
-		plate.name:SetText(originalPlateName.." [Awaiting scan...]")
+		--plate.name:SetText(originalPlateName.." [Awaiting scan...]")
+		plate.name:SetText(originalPlateName)
 		plate.name:SetPoint("BOTTOM", plate, "TOP", 0, 0)
 		plate.name:Show()
 		
@@ -1300,7 +1301,9 @@ nameplates.OnCreate = function(frame)
 		
 		plate.typeIcon:SetHeight(nameplatesHeighthealth)
 		plate.typeIcon:SetWidth(nameplatesHeighthealth)
-		plate.typeIcon:Hide()
+		--plate.typeIcon:Hide()
+		plate.typeIcon.icon:SetTexture("Interface\\AddOns\\ShaguPlates\\img\\loading.tga")
+		plate.typeIcon:Show()
 		
 		plate.classIcon:Hide()
 
