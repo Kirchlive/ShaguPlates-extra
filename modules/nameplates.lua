@@ -77,7 +77,7 @@
 	local nameplatesHeighthealthCritter = 8
 
 	local nameplateWidth = 115
-	local nameplatesHeighthealth = 14
+	local nameplatesHeighthealth = 16
 	local nameplatesHeightcast = 8
 	
 	local nameplatesHeightPower = 7
@@ -610,6 +610,14 @@ nameplates.OnCreate = function(frame)
 	nameplate.health.text:SetJustifyH(nameplatesHptextpos)
 	nameplate.health.text:SetPoint("RIGHT", nameplate.health, "RIGHT", -2, -4)
 	nameplate.health.text:SetTextColor(1,1,1,1)
+	
+	nameplate.health.percentage = nameplate.health:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	--nameplate.health.percentage:SetFont("Interface\\AddOns\\ShaguPlates\\fonts\\francois.ttf", font_size - 2, "OUTLINE")
+	nameplate.health.percentage:SetFont("Fonts\\FRIZQT__.TTF", font_size - 2)
+	nameplate.health.percentage:SetJustifyH("CENTER")
+	nameplate.health.percentage:SetPoint("CENTER", nameplate.health, "CENTER", 0, 0)
+	nameplate.health.percentage:SetTextColor(1,1,1,1)
+	
 	CreateBackdrop(nameplate.health, default_border)
 	
 	nameplate.power = CreateFrame("StatusBar", nil, nameplate)
@@ -1093,6 +1101,13 @@ nameplates.OnCreate = function(frame)
 		plate.health.text:SetText(string.format("%s%%", ceil(hp/hpmax*100)))
 	  end
 	  
+	  plate.health.percentage:SetText(string.format("%s%%", ceil(hp/hpmax*100)))
+	  if (ceil(hp/hpmax*100) < 100) then
+		plate.health.percentage:Show()
+	  else
+		plate.health.percentage:Hide()
+	  end
+	  
 	else
 	  plate.health.text:SetText()
 	end
@@ -1371,6 +1386,7 @@ nameplates.OnCreate = function(frame)
 				if creatureType == "Critter" then
 					plate.health:SetWidth(nameplateWidthCritter)
 					plate.health:SetHeight(nameplatesHeighthealthCritter)
+					plate.health.percentage:Hide()
 					plate.typeIcon:SetHeight(nameplatesHeighthealthCritter)
 					plate.typeIcon:SetWidth(nameplatesHeighthealthCritter)
 					plate.power:SetWidth(nameplateWidthCritter)
