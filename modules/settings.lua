@@ -4,8 +4,7 @@ setfenv(1, ShaguPlates:GetEnvironment())
 -- Settings GUI Module for ShaguPlates-extra
 ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
 
-  -- Local references
-  local C = ShaguPlates_config
+  -- Local references - use direct access to SavedVariable
   local T = T or {}
 
   -- GUI dimensions
@@ -25,36 +24,64 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
     frame.label:SetText(label)
     frame.label:SetTextColor(1, 1, 1)
 
-    -- Get current value
+    -- Get current value from SavedVariable
     local function GetValue()
       if subcat then
-        return C[category] and C[category][subcat] and C[category][subcat][key]
+        return ShaguPlates_config[category] and ShaguPlates_config[category][subcat] and ShaguPlates_config[category][subcat][key]
       else
-        return C[category] and C[category][key]
+        return ShaguPlates_config[category] and ShaguPlates_config[category][key]
       end
     end
 
-    -- Set value
+    -- Set value directly in SavedVariable
     local function SetValue(value)
       if subcat then
-        if not C[category] then C[category] = {} end
-        if not C[category][subcat] then C[category][subcat] = {} end
-        C[category][subcat][key] = value
+        if not ShaguPlates_config[category] then ShaguPlates_config[category] = {} end
+        if not ShaguPlates_config[category][subcat] then ShaguPlates_config[category][subcat] = {} end
+        ShaguPlates_config[category][subcat][key] = value
       else
-        if not C[category] then C[category] = {} end
-        C[category][key] = value
+        if not ShaguPlates_config[category] then ShaguPlates_config[category] = {} end
+        ShaguPlates_config[category][key] = value
       end
     end
 
     if widgetType == "checkbox" then
       frame.input = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
-      frame.input:SetWidth(20)
-      frame.input:SetHeight(20)
+      frame.input:SetWidth(22)
+      frame.input:SetHeight(22)
       frame.input:SetPoint("RIGHT", frame, "RIGHT", -5, 0)
+
+      -- Create custom checkbox appearance
+      CreateBackdrop(frame.input, nil, true)
+      frame.input:SetNormalTexture("")
+      frame.input:SetPushedTexture("")
+      frame.input:SetHighlightTexture("")
+
+      -- Create checkmark texture
+      frame.input.check = frame.input:CreateTexture(nil, "OVERLAY")
+      frame.input.check:SetPoint("CENTER", 0, 0)
+      frame.input.check:SetWidth(16)
+      frame.input.check:SetHeight(16)
+      frame.input.check:SetTexture("Interface\\Buttons\\UI-CheckBox-Check")
+      frame.input.check:Hide()
+
+      -- Update visual state
+      local function UpdateCheckState()
+        if frame.input:GetChecked() then
+          frame.input.check:Show()
+        else
+          frame.input.check:Hide()
+        end
+      end
+
+      -- Set initial state
       frame.input:SetChecked(GetValue() == "1")
-      SkinCheckbox(frame.input)
+      UpdateCheckState()
+
       frame.input:SetScript("OnClick", function()
-        SetValue(this:GetChecked() and "1" or "0")
+        local newValue = this:GetChecked() and "1" or "0"
+        SetValue(newValue)
+        UpdateCheckState()
       end)
 
     elseif widgetType == "text" then
