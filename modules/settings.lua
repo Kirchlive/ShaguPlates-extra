@@ -11,15 +11,13 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
   -- GUI dimensions
   local GUI_WIDTH = 750
   local GUI_HEIGHT = 500
-
-  -- Category definitions with their settings
-  local categories = {}
+  local CONTENT_WIDTH = 540  -- Fixed width for content area
 
   -- Helper function to create a config entry
   local function CreateConfigWidget(parent, widgetType, category, subcat, key, label, desc, options)
     local frame = CreateFrame("Frame", nil, parent)
     frame:SetHeight(24)
-    frame:SetWidth(parent:GetWidth() - 20)
+    frame:SetWidth(CONTENT_WIDTH - 30)
 
     -- Label
     frame.label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -166,7 +164,7 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
   local function CreateHeader(parent, text)
     local frame = CreateFrame("Frame", nil, parent)
     frame:SetHeight(30)
-    frame:SetWidth(parent:GetWidth() - 20)
+    frame:SetWidth(CONTENT_WIDTH - 30)
 
     frame.text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     frame.text:SetPoint("LEFT", frame, "LEFT", 5, 0)
@@ -180,6 +178,61 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
     frame.line:SetTexture(0.3, 1, 0.8, 0.5)
 
     return frame
+  end
+
+  -- Helper to create a scrollable content area
+  local function CreateScrollableContent(parent, name)
+    local scrollFrame = CreateFrame("ScrollFrame", name .. "Scroll", parent)
+    scrollFrame:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
+    scrollFrame:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -12, 0)
+
+    -- Create scroll child
+    local content = CreateFrame("Frame", name .. "Content", scrollFrame)
+    content:SetWidth(CONTENT_WIDTH)
+    content:SetHeight(1)  -- Will be updated dynamically
+    scrollFrame:SetScrollChild(content)
+
+    -- Create scrollbar
+    local scrollbar = CreateFrame("Slider", name .. "ScrollBar", scrollFrame)
+    scrollbar:SetOrientation("VERTICAL")
+    scrollbar:SetPoint("TOPRIGHT", parent, "TOPRIGHT", 0, -2)
+    scrollbar:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 2)
+    scrollbar:SetWidth(10)
+    scrollbar:SetThumbTexture("Interface\\Buttons\\UI-ScrollBar-Knob")
+    scrollbar:SetMinMaxValues(0, 1)
+    scrollbar:SetValue(0)
+    CreateBackdrop(scrollbar, nil, true)
+
+    scrollbar:SetScript("OnValueChanged", function()
+      scrollFrame:SetVerticalScroll(this:GetValue())
+    end)
+
+    scrollFrame:EnableMouseWheel(true)
+    scrollFrame:SetScript("OnMouseWheel", function()
+      local current = scrollbar:GetValue()
+      local step = 30
+      if arg1 > 0 then
+        scrollbar:SetValue(max(0, current - step))
+      else
+        local _, maxVal = scrollbar:GetMinMaxValues()
+        scrollbar:SetValue(min(maxVal, current + step))
+      end
+    end)
+
+    -- Update scrollbar when content changes
+    content.UpdateScrollRange = function()
+      local contentHeight = content:GetHeight()
+      local frameHeight = scrollFrame:GetHeight()
+      local maxScroll = max(0, contentHeight - frameHeight)
+      scrollbar:SetMinMaxValues(0, maxScroll)
+      if maxScroll > 0 then
+        scrollbar:Show()
+      else
+        scrollbar:Hide()
+      end
+    end
+
+    return content, scrollFrame
   end
 
   -- Create the main GUI frame
@@ -230,13 +283,11 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
     -- =============================================
     -- CATEGORY: Nameplates
     -- =============================================
-    local npContent = tabs:CreateTabChild("Nameplates", 120)
-
-    local npScroll = CreateScrollFrame("ShaguPlatesNPScroll", npContent)
-    npScroll:SetAllPoints(npContent)
-    local npChild = CreateScrollChild("ShaguPlatesNPScrollChild", npScroll)
+    local npContent = tabs:CreateTabChild("Nameplates", 120, nil, nil, true)
+    local npChild, npScroll = CreateScrollableContent(npContent, "ShaguPlatesNP")
 
     local yOffset = -10
+    local widgets = {}
 
     -- Nameplate Visibility Header
     local npVisHeader = CreateHeader(npChild, "Visibility")
@@ -404,14 +455,14 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
     local npOverlap = CreateConfigWidget(npChild, "checkbox", "nameplates", nil, "overlap", "Allow Overlap", "Allow nameplates to overlap")
     npOverlap:SetPoint("TOPLEFT", npChild, "TOPLEFT", 10, yOffset)
 
+    -- Set content height for scrolling
+    npChild:SetHeight(math.abs(yOffset) + 40)
+
     -- =============================================
     -- CATEGORY: Appearance
     -- =============================================
-    local appContent = tabs:CreateTabChild("Appearance", 120)
-
-    local appScroll = CreateScrollFrame("ShaguPlatesAppScroll", appContent)
-    appScroll:SetAllPoints(appContent)
-    local appChild = CreateScrollChild("ShaguPlatesAppScrollChild", appScroll)
+    local appContent = tabs:CreateTabChild("Appearance", 120, nil, nil, true)
+    local appChild, appScroll = CreateScrollableContent(appContent, "ShaguPlatesApp")
 
     yOffset = -10
 
@@ -477,14 +528,13 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
     local channelColor = CreateConfigWidget(appChild, "color", "appearance", "castbar", "channelcolor", "Channel Color", "Color for channeled spells")
     channelColor:SetPoint("TOPLEFT", appChild, "TOPLEFT", 10, yOffset)
 
+    appChild:SetHeight(math.abs(yOffset) + 40)
+
     -- =============================================
     -- CATEGORY: Global
     -- =============================================
-    local globalContent = tabs:CreateTabChild("Global", 120)
-
-    local globalScroll = CreateScrollFrame("ShaguPlatesGlobalScroll", globalContent)
-    globalScroll:SetAllPoints(globalContent)
-    local globalChild = CreateScrollChild("ShaguPlatesGlobalScrollChild", globalScroll)
+    local globalContent = tabs:CreateTabChild("Global", 120, nil, nil, true)
+    local globalChild, globalScroll = CreateScrollableContent(globalContent, "ShaguPlatesGlobal")
 
     yOffset = -10
 
@@ -529,14 +579,13 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
     local autoRepair = CreateConfigWidget(globalChild, "checkbox", "global", nil, "autorepair", "Auto-Repair", "Automatically repair equipment")
     autoRepair:SetPoint("TOPLEFT", globalChild, "TOPLEFT", 10, yOffset)
 
+    globalChild:SetHeight(math.abs(yOffset) + 40)
+
     -- =============================================
     -- CATEGORY: Buffs
     -- =============================================
-    local buffContent = tabs:CreateTabChild("Buffs", 120)
-
-    local buffScroll = CreateScrollFrame("ShaguPlatesBuffScroll", buffContent)
-    buffScroll:SetAllPoints(buffContent)
-    local buffChild = CreateScrollChild("ShaguPlatesBuffScrollChild", buffScroll)
+    local buffContent = tabs:CreateTabChild("Buffs", 120, nil, nil, true)
+    local buffChild, buffScroll = CreateScrollableContent(buffContent, "ShaguPlatesBuff")
 
     yOffset = -10
 
@@ -571,14 +620,13 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
     local debuffRowSize = CreateConfigWidget(buffChild, "number", "buffs", nil, "debuffrowsize", "Debuffs Per Row", "Number of debuffs per row")
     debuffRowSize:SetPoint("TOPLEFT", buffChild, "TOPLEFT", 10, yOffset)
 
+    buffChild:SetHeight(math.abs(yOffset) + 40)
+
     -- =============================================
     -- CATEGORY: Loot
     -- =============================================
-    local lootContent = tabs:CreateTabChild("Loot", 120)
-
-    local lootScroll = CreateScrollFrame("ShaguPlatesLootScroll", lootContent)
-    lootScroll:SetAllPoints(lootContent)
-    local lootChild = CreateScrollChild("ShaguPlatesLootScrollChild", lootScroll)
+    local lootContent = tabs:CreateTabChild("Loot", 120, nil, nil, true)
+    local lootChild, lootScroll = CreateScrollableContent(lootContent, "ShaguPlatesLoot")
 
     yOffset = -10
 
@@ -601,10 +649,12 @@ ShaguPlates:RegisterModule("settings", "vanilla:tbc:wotlk", function()
     local lootAdvanced = CreateConfigWidget(lootChild, "checkbox", "loot", nil, "advancedloot", "Advanced Loot", "Enable advanced loot features")
     lootAdvanced:SetPoint("TOPLEFT", lootChild, "TOPLEFT", 10, yOffset)
 
+    lootChild:SetHeight(math.abs(yOffset) + 40)
+
     -- =============================================
     -- CATEGORY: Profiles
     -- =============================================
-    local profileContent = tabs:CreateTabChild("Profiles", 120, nil, true)
+    local profileContent = tabs:CreateTabChild("Profiles", 120, nil, true, true)
 
     local profileNote = profileContent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     profileNote:SetPoint("TOPLEFT", profileContent, "TOPLEFT", 15, -15)
