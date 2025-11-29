@@ -3,16 +3,16 @@ function SlashCmdList.RELOAD(msg, editbox)
   ReloadUI()
 end
 
--- SLASH_SHAGUPLATES1 = '/shaguplates'
--- SLASH_SHAGUPLATES2 = '/splates'
--- SLASH_SHAGUPLATES3 = '/sp'
--- function SlashCmdList.SHAGUPLATES(msg, editbox)
-  -- if ShaguPlates.gui:IsShown() then
-    -- ShaguPlates.gui:Hide()
-  -- else
-    -- ShaguPlates.gui:Show()
-  -- end
--- end
+SLASH_SHAGUPLATES1 = '/shaguplates'
+SLASH_SHAGUPLATES2 = '/splates'
+SLASH_SHAGUPLATES3 = '/sp'
+function SlashCmdList.SHAGUPLATES(msg, editbox)
+  if ShaguPlates.gui and ShaguPlates.gui:IsShown() then
+    ShaguPlates.gui:Hide()
+  elseif ShaguPlates.gui then
+    ShaguPlates.gui:Show()
+  end
+end
 
 -- SLASH_GM1, SLASH_GM2 = '/gm', '/support'
 -- function SlashCmdList.GM(msg, editbox)
