@@ -4,7 +4,9 @@
 
 REQUIRES SUPERWOW https://github.com/balakethelock/SuperWoW
 
-No configuration is available in Shaguplates-extra atm, download latest version from github, and remove any config files 
+**Configuration is now available!** Type `/sp` or `/shaguplates` in-game to open the settings menu.
+
+To reset configuration, download latest version from github, and remove any config files 
 
 global:
 (WTF->account->account name->SavedVariables->ShaguPlates.lua)
